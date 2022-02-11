@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# Must have
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+- Geth - latest version.
+- NodeJS - 12 LTS or above.
 
-## Available Scripts
+## The Directory
 
-In the project directory, you can run:
+Create a new directory where you setup your blockchain
 
-### `yarn start`
+```shell
+mkdir blockchain && cd blockchain
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Bootnode
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+The bootnode is the process responsible for linking nodes together, this process is responsible of identifying peers in the network.
 
-### `yarn test`
+### Start a bootnode
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+To start the bootnode use the following command:
 
-### `yarn build`
+```shell
+bootnode -nodekey boot.key -nat "none:127.0.0.1" -addr ":30300"
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Example
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The output should include an enode that looks similiar to this, this text will be used to connect nodes in the same network to each other:
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    enode://1fef27cc534a194318d040b2dc3c9775a879c9fca1aa6ee75f00406c1cd09f2f1009450bfeea4102a7d0f97a90e0c13d7f93e0bdfc4da533f8eb789d08889728@127.0.0.1:0?discport=30300
 
-### `yarn eject`
+## Setting up a node
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Account
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+In order to bootstrap a blockchain node we need an account.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Account Generation
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+Use this command to generate a new account, the datadir flag is used to specify the directory where the account is going to be stored.
 
-## Learn More
+```shell
+geth account new --datadir "NODE_NAME"
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+You will be asked to enter a password, make sure you don't lose that password since it's going to be used to unlock the newly generated account later.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Example
 
-### Code Splitting
+The command will spit out an account address that looks similiar to this:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+    0xf35Ea5Cd8E2302A07263A94BD9cbB239eeeC2c40
 
-### Analyzing the Bundle Size
+Make sure you store the password inside the node directory and call it password.txt that we could reference it later.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Genesis block
 
-### Making a Progressive Web App
+In order to start our node we first need to setup our genesis block
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Setting up the genesis block
 
-### Advanced Configuration
+We can use puppeth to generate a genesis block easily, note that Puppeth comes with Geth.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+```shell
+puppeth
+```
 
-### Deployment
+Puppeth will prompt you with steps to setup your genesis block, make sure you follow them carefully.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+We are going to build a PoA network, make sure you choose the Clique Consensus Engine. Also, for the accounts that are allowed to seal, enter the address of the account that we generated before. As for the accounts to be prefunded, use the address of your test account that you can get from a wallet like Metamask.
 
-### `yarn build` fails to minify
+### Initializing account with genesis block
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Use the newly generated genesis block to initialize your account that you created earlier, in my case my blockchain network name is "aures" so the genesis block JSON file will be called "aures.json"
+
+```shell
+geth init --datadir node aures.json
+```
+
+## Start the node
+
+To start the node we can use the newly generated account, the bootnode address that we setup earlier and the genesis block that we setup:
+
+The network id comes from the genesis block, open up the genesis block JSON file and look for the chainId property.
+
+### Node starting command
+
+It should look like this, replace the arguments to the flags with your own.
+
+```shell
+geth --datadir node --networkid 38028 --bootnodes "enode://1fef27cc534a194318d040b2dc3c9775a879c9fca1aa6ee75f00406c1cd09f2f1009450bfeea4102a7d0f97a90e0c13d7f93e0bdfc4da533f8eb789d08889728@127.0.0.1:30300" --port 30301 --http --http.corsdomain "*" --http.port 8301 --allow-insecure-unlock --unlock 0xf35Ea5Cd8E2302A07263A94BD9cbB239eeeC2c40 --password "./node/password.txt" --mine
+```
+
+If everything goes well, then congratulations you have successfully setup a new blockchain network, you can add other members or peers to this chain by following the same steps before but make sure you use the same genesis block, networkId and enode address.
