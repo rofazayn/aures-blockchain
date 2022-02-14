@@ -39,7 +39,13 @@ First change directory to your blockchain folder
 cd blockchain
 ```
 
-To start the bootnode use the following command:
+First we have to generate a key for our bootnode
+
+```shell
+bootnode -genkey boot.key
+```
+
+Then to start the bootnode use the following command:
 
 ```shell
 bootnode -nodekey boot.key -nat "none:127.0.0.1" -addr ":30300"
@@ -186,5 +192,3 @@ module.exports = {
 ```
 
 As we can see we changed the output path of our compiled contracts to `./src/artifacts`, we will find the ABI (application binary interface) and the binary code of our compiled contracts.
-
-## Coming Next: Building a Smart Contract
