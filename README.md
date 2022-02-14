@@ -191,4 +191,173 @@ module.exports = {
 };
 ```
 
-As we can see we changed the output path of our compiled contracts to `./src/artifacts`, we will find the ABI (application binary interface) and the binary code of our compiled contracts.
+As we can see we changed the output path of our compiled contracts to `./src/artifacts`, we will find the ABI (application binary interface).
+
+## Smart Contracts
+
+To create a smart contract we have to write the code for it and compile it using a Solidity language compiler, then take the result of the compilation and deploy it to our blockchain.
+
+### Create a Smart Contract
+
+First we have to create a new file inside our contracts folder, for the sake of this tutorial, we'll be creating a bank smart contract, the contract will:
+
+- Have accounts for different addresses.
+- Each account has a balance.
+- Account owners will be able to see the balance of their accounts.
+- Account owners will be able to credit, debit and transfer money from their accounts if certain conditions are met.
+
+So let's create our file and call it `Bank.sol`
+
+```shell
+cd ./contracts && touch Bank.sol
+```
+
+You can open up that file with your favourite code editor, then copy paste this code inside
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.4;
+
+contract Bank {
+    string public name = "Aures Bank";
+    string public symbol = "DZD";
+    uint256 public initialSupply = 10000000;
+
+    mapping(address => uint256) balances;
+
+    constructor() {
+        balances[msg.sender] = initialSupply;
+    }
+
+    function debit(uint256 amount) external returns (uint256) {
+        require(balances[msg.sender] >= amount, "Insufficient funds to debit.");
+        balances[msg.sender] -= amount;
+        return amount;
+    }
+
+    function credit(uint256 amount) external returns (uint256) {
+        // require(balances[msg.sender] > amount, "Insufficient funds.");
+        balances[msg.sender] += amount;
+        return amount;
+    }
+
+    function transfer(address to, uint256 amount) external {
+        require(
+            balances[msg.sender] >= amount,
+            "Insufficient funds to transfer."
+        );
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+    }
+
+    function balanceOf(address account) external view returns (uint256) {
+        return balances[account];
+    }
+}
+```
+
+Before saving that file, we check if there are any errors in our contract code. If no errors were found, we can proceed to compiling it, to compile our contract we can run:
+
+```shell
+npx hardhat compile
+```
+
+If the compilation goes well we should see new files are generated inside our `src/artifacts` folder.
+
+- A `build-info` folder, dont worry about it right now.
+- A `contracts` folder: there we can find our compiled contracts.
+
+If we open up our contracts folder from the artifacts, we see a new folder called `Bank.sol` folder, inside that folder we can find a file called `Bank.json` file, that is what we need in order to deploy our smart contract.
+
+### Deploying our Contract to Hardhat Test Network
+
+In order to do that we have to write a deployment scripts, open up the `scripts` folder, there we can find a JavaScript file, let's rename it to `deploy.js`
+
+In there we remove the old code that deploys a greeting smart contract and replace it with our own deployment code that deploys our bank smart contracts, it should look something like this.
+
+```js
+const hre = require('hardhat');
+
+async function main() {
+  const Bank = await hre.ethers.getContractFactory('Bank');
+  const bank = await Bank.deploy();
+  await bank.deployed();
+
+  console.log('Bank contract deployed to:', bank.address);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+```
+
+The process is as follows:
+
+- Create a async main function to benefit from asynchronous features.
+- Get the contract factory (ABI and binary code) and deploy it to a a network.
+- Wait for the address of the deployment contract if it is successfully deployed or catch errors if there are any.
+- Exit with code 1.
+
+If we recall, we scpeified a network field on our `hardhat.config.js` file.
+
+```js
+module.exports = {
+  ...
+  networks: {
+    hardhat: {
+      chainId: 1337,
+    },
+  },
+  ...
+};
+```
+
+Hardhat network in this case is called localhost.
+
+First we start Hardhat's test network, it will give us some pre-funded accounts to test with
+
+```shell
+npx hardhat node
+```
+
+We'll get something that looks like:
+
+```shell
+Started HTTP and WebSocket JSON-RPC server at http://127.0.0.1:8545/
+
+Accounts
+========
+
+WARNING: These accounts, and their private keys, are publicly known.
+Any funds sent to them on Mainnet or any other live network WILL BE LOST.
+
+Account #0: 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 (10000 ETH)
+Private Key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+...
+```
+
+Then we run the deployment script against the test network.
+
+```shell
+npx hardhat run scripts/deploy.js --network localhost
+```
+
+_Make sure you pass the network flag and the `localhost` argument since we are not deploying directly to our newly created blockchain, but to hardhat test network first._
+
+If everything goes well, we should get a success message and a deployment address:
+
+```shell
+Compiling 1 file with 0.8.4
+Solidity compilation finished successfully
+Bank contract deployed to: 0x5FbDB2315678afecb367f032d93F642f64180aa3
+```
+
+Whoa! we have successfully deployed a contract to our test network, let's make sure we save that contract deployment address
+
+    0x5FbDB2315678afecb367f032d93F642f64180aa3
+
+### Coming Next: Deploying a Smart Contract to our Own Blockchain.
