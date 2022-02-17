@@ -14,7 +14,8 @@ import { ethers } from 'ethers';
 import { useCallback, useEffect, useState } from 'react';
 import bankContract from '../artifacts/contracts/Bank.sol/Bank.json';
 
-const bankContractAddress = '0x5fbdb2315678afecb367f032d93f642f64180aa3';
+// const bankContractAddress = '0x5fbdb2315678afecb367f032d93f642f64180aa3';
+const bankContractAddress = '0x67CACc9265321403B24E9d18F1a6813d4fbce684';
 
 const Bank = () => {
   const [accountAddress, setAccountAddress] = useState('');

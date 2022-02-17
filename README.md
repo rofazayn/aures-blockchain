@@ -360,4 +360,81 @@ Whoa! we have successfully deployed a contract to our test network, let's make s
 
     0x5FbDB2315678afecb367f032d93F642f64180aa3
 
-### Coming Next: Deploying a Smart Contract to our Own Blockchain.
+### Deploying the Contract to our Blockchain
+
+All we have to do is:
+
+- Edit hardhat.config.json and add a new network configuration object.
+- Get the private key of one of our prefunded accounts in order to use to pay for the contract deployment.
+
+Inside hardhat.config.json we add
+
+```js
+  aures: {
+      chainId: 38028,
+      url: 'http://127.0.0.1:8301',
+      accounts: [process.env.ACCOUNT_PK],
+  },
+```
+
+Then we setup an environment variable containing our account's private key.
+
+In the root directory we create `.env` file.
+
+```shell
+touch .env
+```
+
+Inside the `.env` file we paste our private key.
+
+```env
+ACCOUNT_PK=<private_key_here>
+```
+
+Save that file, make sure your newly created blockchain node is up and running then run the following command:
+
+```shell
+npx hardhat run scripts/deploy.js --network aures
+```
+
+Notice that I used `aures` as an argument to the network flag, in order to deploy it to this specific network.
+
+After a block time, our terminal will return the deployed contract's address, we can copy that address now and connect it to ethers.js or web3 on our front-end app.
+
+Example output:
+
+```shell
+Bank contract deployed to: 0x57Ad5f6D9E770B54235A1e0DB86D327656f85b8A
+```
+
+Go to `./src/components/Bank.js` and change the bankContractAddress variable to the address we received from the terminal.
+
+```js
+const bankContractAddress = '0x67CACc9265321403B24E9d18F1a6813d4fbce684';
+```
+
+### Running the dApp (React)
+
+All we have to do now is run this command in the root directory of our project:
+
+```
+yarn start
+```
+
+If you find errors, then make sure you install `Chakra UI` needed dependencies then try again.
+
+If everything goes right, a browser window will show up with the app.
+
+Connect your MetaMask account and make sure you are using the right network.
+
+Go to MetaMask extension and click on Ethereum Mainnet button, then click on `Add Network`
+
+There you add your blockchain:
+
+```
+  Network Name -> Aures Testnet
+  New RPC URL -> http://127.0.0.1:8301
+  Chain ID -> 38028
+```
+
+And that's it, you can now use the app, thank you for your time, I hope this tutorial was helpful to you in some way.
