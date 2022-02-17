@@ -1,4 +1,5 @@
 require('@nomiclabs/hardhat-waffle');
+require('dotenv').config({ path: __dirname + '/.env' });
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -25,6 +26,11 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 1337,
+    },
+    aures: {
+      chainId: 38028,
+      url: 'http://127.0.0.1:8301',
+      accounts: [process.env.ACCOUNT_PK],
     },
   },
 };
