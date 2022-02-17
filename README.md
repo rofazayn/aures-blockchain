@@ -13,6 +13,22 @@ Let's create an Ethereum private network node, code a smart contract and deploy 
 - Geth - 1.10.15-stable or above.
 - NodeJS - 12 LTS or above.
 
+## Reproducing
+
+If you don't want to go through the full tutorial, just download or fork the repo and then run:
+
+```shell
+npm install
+```
+
+or
+
+```shell
+yarn
+```
+
+then skip the setting up the project, and jump into starting a node.
+
 ## The Directory
 
 Create a new directory for the project.
@@ -416,6 +432,12 @@ const bankContractAddress = '0x67CACc9265321403B24E9d18F1a6813d4fbce684';
 ### Running the dApp (React)
 
 All we have to do now is run this command in the root directory of our project:
+
+```shell
+npm run start
+```
+
+or
 
 ```
 yarn start
